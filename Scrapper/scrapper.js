@@ -2,66 +2,132 @@ const puppeteer = require("puppeteer");
 
 const BASE_URL = "http://kau.ac.kr/web/pages";
 const SUFFIX = ".do";
-const SCHOOL_NOTI_INDEX = "/gc14561b";
-const SCHOOL_NOTI_URL = BASE_URL + SCHOOL_NOTI_INDEX + SUFFIX;
+const TITLE_SELECTOR_SUFFIX = " tr td a";
+const WRITER_SELECTOR_SUFFIX = " .not_m";
 
-const test = async () => {
+class SchoolInfo {
+  constructor() {
+    this.index = "/gc14561b";
+    this.url = BASE_URL + this.index + SUFFIX;
+    this.baseSelector = "#notiDfTable";
+    this.titleSelector = this.baseSelector + TITLE_SELECTOR_SUFFIX;
+    this.writerSelector = this.baseSelector + WRITER_SELECTOR_SUFFIX;
+  }
+}
+
+class NormalInfo {
+  constructor() {
+    this.index = "/gc32172b";
+    this.url = BASE_URL + this.index + SUFFIX;
+    this.baseSelector = "#bbsDfTable";
+    this.titleSelector = this.baseSelector + TITLE_SELECTOR_SUFFIX;
+    this.writerSelector = this.baseSelector + WRITER_SELECTOR_SUFFIX;
+  }
+}
+
+const schoolInfo = new SchoolInfo();
+const normalInfo = new NormalInfo();
+
+console.log(schoolInfo.titleSelector);
+console.log(normalInfo.titleSelector);
+const targetInfos = [schoolInfo, normalInfo];
+
+const test = async (targetInfo) => {
+  const { url, titleSelector, writerSelector } = targetInfo;
+
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
 
-  console.log("Browser Init");
-
-  await page.goto(SCHOOL_NOTI_URL);
+  await page.goto(url);
   await page.waitForSelector(".emp");
 
-  const titles = await page.evaluate(() => {
-    const titleElements = document.querySelectorAll("#notiDfTable tr td a");
-    const titleArray = Array.from(titleElements).map(
-      (element) => element.innerText
-    );
-    return titleArray;
-  });
+  const notices = await page.evaluate(
+    (titleSelector, writerSelector) => {
+      console.log(titleSelector, writerSelector);
+      const titleElements = document.querySelectorAll(titleSelector);
+      const titleArray = Array.from(titleElements).map((element) => ({
+        title: element.innerText,
+      }));
+      const writerElements = document.querySelectorAll(writerSelector);
+      const writerArray = Array.from(writerElements)
+        .filter((element) => {
+          if (element.innerText === "") return false;
+          else return true;
+        })
+        .map((element) => element.innerText);
 
-  const writers = await page.evaluate(() => {
-    const writerElements = document.querySelectorAll("#notiDfTable .not_m");
-    const writerArray = Array.from(writerElements)
-      .filter((element) => {
-        if (element.innerText === "") return false;
-        else return true;
-      })
-      .map((element) => element.innerText);
-
-    const objArray = [];
-    for (let i = 0; i < writerArray.length; i += 3) {
-      const new_obj = {};
-      for (let j = 0; j < 2; j += 1) {
-        if (j === 0) {
-          new_obj.writer = writerArray[i + j];
-        } else {
-          new_obj.date = writerArray[i + j];
+      const objArray = [];
+      for (let i = 0; i < writerArray.length; i += 3) {
+        const newObj = {};
+        for (let j = 0; j < 2; j += 1) {
+          if (j === 0) {
+            newObj.writer = writerArray[i + j];
+          } else {
+            newObj.date = writerArray[i + j];
+          }
         }
+        objArray.push(newObj);
       }
-      objArray.push(new_obj);
-    }
 
-    return objArray;
-  });
+      const mergedArray = titleArray.map((title, idx) => ({
+        ...title,
+        ...objArray[idx],
+      }));
+      return mergedArray;
+    },
+    titleSelector,
+    writerSelector
+  );
 
-  const notices = await page.evaluate(() => {
-    const titleElements = document.querySelectorAll("#notiDfTable tr td a");
-    const writerElements = document.querySelectorAll("#notiDfTable .not_m");
-    const titleArray = Array.from(titleElements).map(
-      (element) => element.innerText
-    );
-    const writerArray = Array.from(writerElements).map(
-      (element) => element.innerText
-    );
-  });
-
-  titles.forEach((title) => console.log(title));
-  writers.forEach((writer) => console.log(writer));
+  notices.forEach((obj) => console.log(obj));
 
   await browser.close();
 };
 
-test();
+// const test_school = async () => {
+//   const browser = await puppeteer.launch({ headless: "new" });
+//   const page = await browser.newPage();
+
+//   await page.goto(SCHOOL_NOTI_URL);
+//   await page.waitForSelector(".emp");
+
+//   const notices = await page.evaluate(() => {
+//     const titleElements = document.querySelectorAll("#notiDfTable tr td a");
+//     const titleArray = Array.from(titleElements).map((element) => ({
+//       title: element.innerText,
+//     }));
+//     const writerElements = document.querySelectorAll("#notiDfTable .not_m");
+//     const writerArray = Array.from(writerElements)
+//       .filter((element) => {
+//         if (element.innerText === "") return false;
+//         else return true;
+//       })
+//       .map((element) => element.innerText);
+
+//     const objArray = [];
+//     for (let i = 0; i < writerArray.length; i += 3) {
+//       const newObj = {};
+//       for (let j = 0; j < 2; j += 1) {
+//         if (j === 0) {
+//           newObj.writer = writerArray[i + j];
+//         } else {
+//           newObj.date = writerArray[i + j];
+//         }
+//       }
+//       objArray.push(newObj);
+//     }
+
+//     const mergedArray = titleArray.map((title, idx) => ({
+//       ...title,
+//       ...objArray[idx],
+//     }));
+//     return mergedArray;
+//   });
+
+//   notices.forEach((obj) => console.log(obj));
+
+//   await browser.close();
+// };
+for (const obj of targetInfos) {
+  test(obj);
+}

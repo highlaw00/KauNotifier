@@ -1,16 +1,10 @@
 package highlaw00.kaunotifier.controller;
 
+import java.util.List;
+
 public class SubscriptionForm {
-    private String sid;
+    private List<Long> sourceList;
     private String email;
-
-    public String getSid() {
-        return sid;
-    }
-
-    public void setSid(String sid) {
-        this.sid = sid;
-    }
 
     public String getEmail() {
         return email;
@@ -18,5 +12,13 @@ public class SubscriptionForm {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Long> getSourceList() {
+        return sourceList;
+    }
+
+    public void setSourceList(List<Long> sourceList) {
+        this.sourceList = sourceList;
     }
 }

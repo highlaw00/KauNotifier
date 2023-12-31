@@ -15,11 +15,16 @@
         </div>
         <div th:unless="${status}">해당 이메일로 등록된 구독이 존재하지 않습니다.</div>
         <div th:if="${status}">
-            <div th:text="${subscription.email}"></div>
-            <form method="post">
-                <input type="email" name="email" placeholder="알림을 받을 새로운 이메일을 입력해주세요" required/>
-                <button type="submit" class="contrast">구독 정보 수정하기</button>
-            </form>
+            <div th:text="${user.email}"></div>
+            <div>
+                <ul th:each="subscription : ${subscriptions}">
+                    <li th:text="${subscription.source.description}"></li>
+                </ul>
+            </div>
+<!--            <form method="post">-->
+<!--                <input type="email" name="email" placeholder="알림을 받을 새로운 이메일을 입력해주세요" required/>-->
+<!--                <button type="submit" class="contrast">구독 정보 수정하기</button>-->
+<!--            </form>-->
         </div>
     </article>
 </th:block>

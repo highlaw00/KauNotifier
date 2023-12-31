@@ -1,7 +1,7 @@
 package highlaw00.kaunotifier;
 
 import highlaw00.kaunotifier.repository.*;
-import highlaw00.kaunotifier.service.SubscriptionServiceImpl;
+import highlaw00.kaunotifier.service.*;
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +18,17 @@ public class SpringConfig {
         this.em = em;
     }
     @Bean
-    public SubscriptionServiceImpl subscriptionService() {
-        return new SubscriptionServiceImpl(userRepository(), subscriptionRepository(), sourceRepository());
+    public SubscriptionService subscriptionService() {
+        return new SubscriptionServiceImpl(subscriptionRepository());
     }
+
+    @Bean
+    public SourceService sourceService() {
+        return new SourceServiceImpl(sourceRepository());
+    }
+
+    @Bean
+    public UserService userService() { return new UserServiceImpl(userRepository()); }
 
     @Bean
     public SubscriptionRepository subscriptionRepository() {

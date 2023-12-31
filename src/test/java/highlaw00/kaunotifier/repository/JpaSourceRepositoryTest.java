@@ -28,6 +28,9 @@ public class JpaSourceRepositoryTest {
     @Test
     void findAll() {
         List<Source> sourceList = repository.findAll();
+        for (Source source : sourceList) {
+            System.out.println("source.getSourceName() = " + source.getSourceName());
+        }
         Assertions.assertThat(sourceList.isEmpty()).isFalse();
     }
 }

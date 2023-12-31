@@ -25,22 +25,16 @@ public class JpaSubscriptionRepository implements SubscriptionRepository{
 
     @Override
     public List<Subscription> saveAll(List<Subscription> subscriptions) {
-        EntityTransaction transaction = em.getTransaction();
-
-        transaction.begin();
-
         for (Subscription subscription : subscriptions) {
             em.persist(subscription);
         }
-
-        transaction.commit();
-
         return subscriptions;
     }
 
     @Override
     public List<Subscription> findAllWithUserId(Long id) {
-        return em.createQuery("select s from Subscription s where s.user = :id", Subscription.class)
+        return em.createQuery("select s from Subscription s where s.user.userId = :id", Subscription.class)
+                .setParameter("id", id)
                 .getResultList();
     }
 

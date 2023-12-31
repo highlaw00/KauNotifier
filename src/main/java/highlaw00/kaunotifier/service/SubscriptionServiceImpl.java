@@ -6,6 +6,7 @@ import highlaw00.kaunotifier.entity.User;
 import highlaw00.kaunotifier.repository.SourceRepository;
 import highlaw00.kaunotifier.repository.SubscriptionRepository;
 import highlaw00.kaunotifier.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -15,13 +16,10 @@ import java.util.regex.Pattern;
 
 @Transactional // -> 메서드가 정상 종료된 경우 트랜잭션이 커밋됨. 예외가 발생하면 롤백시킴.
 public class SubscriptionServiceImpl implements SubscriptionService{
-    private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final SourceRepository sourceRepository;
-    public SubscriptionServiceImpl(UserRepository userRepository, SubscriptionRepository subscriptionRepository, SourceRepository sourceRepository) {
-        this.userRepository = userRepository;
+
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
-        this.sourceRepository = sourceRepository;
     }
 
     /**
@@ -29,23 +27,17 @@ public class SubscriptionServiceImpl implements SubscriptionService{
      */
     @Override
     public List<Subscription> subscribe(User user, List<Source> sourceList) {
-        if (!isUserExists(user)) {
-            return new ArrayList<>();
-        }
-
-        User savedUser = userRepository.save(user);
+        // TODO: USER_ID VALIDATION
         List<Subscription> subscriptionList = new ArrayList<>();
 
         for (Source source: sourceList) {
             Subscription subscription = new Subscription();
             subscription.source = source;
-            subscription.user = savedUser;
+            subscription.user = user;
             subscriptionList.add(subscription);
         }
 
-        List<Subscription> result = subscriptionRepository.saveAll(subscriptionList);
-
-        return result;
+        return subscriptionRepository.saveAll(subscriptionList);
     }
 
     @Override
@@ -55,17 +47,13 @@ public class SubscriptionServiceImpl implements SubscriptionService{
 
     @Override
     public List<Subscription> getSubscriptions(User user) {
-        if (!isUserExists(user)) {
-            return new ArrayList<>();
-        } else {
-            return subscriptionRepository.findAllWithUserId(user.getUserId());
-        }
+        return subscriptionRepository.findAllWithUserId(user.getUserId());
     }
 
-    private boolean isUserExists(User user) {
-        String email = user.getEmail();
-        return userRepository.findByEmail(email).isPresent();
-    }
+//    private boolean isUserExists(User user) {
+//        String email = user.getEmail();
+//        return userRepository.findByEmail(email).isPresent();
+//    }
 
     /*
      * 이메일 포맷이 부합하는 학번인지 확인

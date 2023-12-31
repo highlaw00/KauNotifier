@@ -1,30 +1,46 @@
 package highlaw00.kaunotifier.service;
 
+import highlaw00.kaunotifier.entity.Source;
 import highlaw00.kaunotifier.entity.Subscription;
+import highlaw00.kaunotifier.entity.User;
 import highlaw00.kaunotifier.repository.SubscriptionRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 @SpringBootTest
 public class SubscriptionServiceImplTest {
-    SubscriptionServiceImpl subscriptionServiceImpl;
-    SubscriptionRepository subscriptionRepository;
+    private final SubscriptionService subscriptionService;
+    private final SourceService sourceService;
+    private final UserService userService;
+
+    @Autowired
+    public SubscriptionServiceImplTest(SubscriptionService subscriptionService, SourceService sourceService, UserService userService) {
+        this.subscriptionService = subscriptionService;
+        this.sourceService = sourceService;
+        this.userService = userService;
+    }
 
     @Test
     public void 구독하기() throws Exception {
         //given
-        //TODO: 서비스 테스트
-//        subscription.setEmail("choiyool00@gmail.com");
+        List<Source> sources = sourceService.getSources().subList(0, 3);
+        User user = new User();
+        user.setEmail("choiyool00@kau.kr");
+        // persist했을 때 값이 알아서 증가한다? -> Generated Value 덕분인가?
+        userService.join(user);
 
         //when
-//        String savedEmail = subscriptionServiceImpl.join(subscription);
+        List<Subscription> result = subscriptionService.subscribe(user, sources);
 
         //then
-//        Subscription result = subscriptionRepository.findByEmail(savedEmail).get();
-//        Assertions.assertThat(subscription).isEqualTo(result);
+        List<Subscription> findSubscriptions = subscriptionService.getSubscriptions(user);
+        Assertions.assertThat(result.size()).isEqualTo(findSubscriptions.size());
     }
 
     @Test

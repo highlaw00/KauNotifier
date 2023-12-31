@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<!-- 최신 SpringBoot 에서는 layout:decorate="~{layout/layout}" 으로 사용 -->
+
+<th:block layout:fragment="content">
+    <article class="grid">
+        <div>
+            <hgroup>
+                <h1>알림 구독</h1>
+                <h2>항공대 공지 알림 서비스</h2>
+            </hgroup>
+
+        </div>
+        <div th:unless="${status}">해당 이메일로 등록된 구독이 존재하지 않습니다.</div>
+        <div th:if="${status}">
+            <div th:text="${subscription.email}"></div>
+            <form method="post">
+                <input type="email" name="email" placeholder="알림을 받을 새로운 이메일을 입력해주세요" required/>
+                <button type="submit" class="contrast">구독 정보 수정하기</button>
+            </form>
+        </div>
+    </article>
+</th:block>
+</html>

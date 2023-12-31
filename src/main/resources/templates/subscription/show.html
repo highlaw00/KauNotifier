@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<th:block layout:fragment="content">
+    <div class="container">
+        <table>
+            <thead>
+            <tr>
+                <th>이메일</th>
+                <th>시작 일시</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="subscription : ${subscriptions}">
+                <td th:text="${subscription.email}"></td>
+                <td th:text="${subscription.startTime}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</th:block>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+
+    <!-- EntityManagerFactory 생성 시 unit name과 일치해야 합니다 -->
+    <persistence-unit name="kaunotifier_h2">
+        <class>kauproject.kaunotifier.domain.Member</class>
+        <class>kauproject.kaunotifier.domain.Source</class>
+        <class>kauproject.kaunotifier.domain.Subscription</class>
+        <properties>
+            <!-- 필수 속성 -->
+            <!-- DB Driver -->
+            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
+
+            <!-- DB user info -->
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.password" value=""/>
+
+            <!-- DB url -->
+            <property name="javax.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/kaunotifier"/>
+
+            <!-- DB Dialect 설정 -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+
+            <!-- 옵션 -->
+            <!-- SQL show -->
+            <property name="hibernate.show_sql" value="true"/>
+
+            <!-- SQL 정렬 -->
+            <property name="hibernate.format_sql" value="true"/>
+
+            <!-- SQL에 관한 주석 처리 -->
+            <property name="hibernate.use_sql_comments" value="true"/>
+
+            <!-- application 실행 시 ddl 전략 -->
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+        </properties>
+
+
+    </persistence-unit>
+</persistence>

@@ -16,5 +16,11 @@
 
 - 사용 프레임워크
 - 사용 Database
+
 - ERD 다이어그램
+![image](https://github.com/highlaw00/KauNotifier/assets/65754646/6874bb62-7caf-4f09-bd0e-fd653dbeeca1)
+
 - 클래스 다이어그램
+![image](https://github.com/highlaw00/KauNotifier/assets/65754646/db9b43c2-d79f-4722-9980-66796cbe65d5)
+
+### 웹 스크래퍼

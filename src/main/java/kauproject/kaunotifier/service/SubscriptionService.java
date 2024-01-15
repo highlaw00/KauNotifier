@@ -6,11 +6,13 @@ import kauproject.kaunotifier.domain.Subscription;
 import kauproject.kaunotifier.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class SubscriptionService {
 
@@ -20,7 +22,6 @@ public class SubscriptionService {
         List<Subscription> subscriptionList = new ArrayList<>();
         for (Source source : sourceList) {
             Subscription subscription = Subscription.createSubscription(member, source);
-            member.addSubscription(subscription);
             subscriptionList.add(subscription);
         }
 

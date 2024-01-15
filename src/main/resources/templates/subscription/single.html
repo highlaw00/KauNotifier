@@ -10,6 +10,9 @@
         <ul th:each="subscription: ${member.subscriptions}">
             <li th:text="${subscription.source.description}"></li>
         </ul>
+        <a th:href="@{/subscriptions/{param1}/edit (param1=${member.email})}">
+            <button type="button" class="btn btn-primary"> 수정하기 </button>
+        </a>
     </div>
     <div th:unless="${member.id} and ${param.status}">
         <div>잘못된 요청</div>

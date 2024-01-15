@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout.html}">
+<head>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:if="${member.id} and ${param.status}">
+        <div th:text="${member.name}"></div>
+        <div th:text="${member.email}"></div>
+        <ul th:each="subscription: ${member.subscriptions}">
+            <li th:text="${subscription.source.description}"></li>
+        </ul>
+    </div>
+    <div th:unless="${member.id} and ${param.status}">
+        <div>잘못된 요청</div>
+    </div>
+</div>
+</body>
+</html>

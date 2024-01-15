@@ -24,9 +24,7 @@ class H2Connection {
 
         try {
             tx.begin();
-            Member member = new Member();
-            member.setName("hi");
-            member.setEmail("hello");
+            Member member = Member.createMember("test", "test@email.com");
 
             em.persist(member);
             tx.commit();

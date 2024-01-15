@@ -15,12 +15,12 @@ public class Subscription {
     @Column(name = "subscription_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     @Setter
     private Member member;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_id")
     private Source source;
 
@@ -33,6 +33,7 @@ public class Subscription {
     public static Subscription createSubscription(Member member, Source source) {
         Subscription subscription = new Subscription();
         subscription.member = member;
+        subscription.member.addSubscription(subscription);
         subscription.source = source;
 
         return subscription;

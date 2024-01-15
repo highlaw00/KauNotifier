@@ -22,7 +22,7 @@ public class SourceRepositoryTest {
     @Test
     void findAll() {
         // given
-        List<Source> sourceList = sourceRepository.findAll();
+        List<Source> sourceList = sourceRepository.findAllList();
 
         assertThat(sourceList.size()).isGreaterThan(0);
     }

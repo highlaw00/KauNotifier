@@ -28,7 +28,7 @@ public class SubscriptionServiceTest {
         // given
         Member testA = Member.createMember("테스트 멤버", "test123@gmail.com");
         memberService.join(testA);
-        List<Source> sourceList = sourceRepository.findAll();
+        List<Source> sourceList = sourceRepository.findAllList();
         int sourceSize = sourceList.size();
 
         List<Subscription> beforeSubscriptionList = subscriptionService.findSubscriptionOfMember(testA);

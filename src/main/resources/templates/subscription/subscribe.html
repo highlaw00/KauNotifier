@@ -4,7 +4,6 @@
 </head>
 <body>
 <div class="container" layout:fragment="content">
-
     <form method="post" action="/subscribe" th:object="${subscriptionForm}">
         <div class="mt-3 mb-3">
             <label for="email" class="form-label">이메일</label>
@@ -20,7 +19,7 @@
             <div class="row row-cols-2">
                 <div class="col text-start" th:each="source: ${sources}">
                     <input type="checkbox" class="form-check-input" th:value="${source.getId()}" th:field="${subscriptionForm.selectedSources}">
-                    <label class="form-check-label" th:for="${source.getId()}" th:text="${source.getDescription()}"></label>
+                    <label class="form-check-label" th:for="${#ids.prev('selectedSources')}" th:text="${source.getDescription()}"></label>
                 </div>
             </div>
         </div>

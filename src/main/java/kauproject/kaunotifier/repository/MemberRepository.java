@@ -24,13 +24,21 @@ public class MemberRepository {
     }
 
     public Optional<Member> findByNameAndEmail(String name, String email) {
-        return Optional.ofNullable(em.createQuery("select m from Member m where m.name = :name and m.email = :email", Member.class)
+        List<Member> resultList = em.createQuery("select m from Member m where m.name = :name and m.email = :email", Member.class)
                 .setParameter("name", name)
                 .setParameter("email", email)
-                .getSingleResult());
+                .getResultList();
+        return resultList.stream().findAny();
     }
 
     public List<Member> findAll() {
         return em.createQuery("select m from Member m", Member.class).getResultList();
+    }
+
+    /**
+     * 회원 탈퇴
+     * @param member
+     */
+    public void remove(Member member) {
     }
 }

@@ -14,5 +14,5 @@ public class SubscriptionForm {
 
     private String name;
     private String email;
-    private List<String> selectedSources = new ArrayList<>();
+    private List<Long> selectedSources = new ArrayList<>();
 }

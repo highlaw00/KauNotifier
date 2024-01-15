@@ -14,6 +14,5 @@ public class MemberService {
     public void join(Member member) {
         memberRepository.save(member);
     }
-    
-    public 
+
 }

@@ -45,4 +45,15 @@ public class Member {
     public void addSubscription(Subscription subscription) {
         this.subscriptions.add(subscription);
     }
+
+    public void replaceSubscriptions(List<Subscription> subscriptions) {
+        this.subscriptions.clear();
+        for (Subscription subscription : subscriptions) {
+            this.addSubscription(subscription);
+        }
+    }
+
+    public void unsubscribeAll() {
+        this.subscriptions = null;
+    }
 }

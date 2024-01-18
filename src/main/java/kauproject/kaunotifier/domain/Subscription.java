@@ -33,7 +33,6 @@ public class Subscription {
     public static Subscription createSubscription(Member member, Source source) {
         Subscription subscription = new Subscription();
         subscription.member = member;
-        subscription.member.addSubscription(subscription);
         subscription.source = source;
 
         return subscription;

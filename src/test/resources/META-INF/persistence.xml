@@ -33,7 +33,7 @@
             <property name="hibernate.use_sql_comments" value="true"/>
 
             <!-- application 실행 시 ddl 전략 -->
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
         </properties>
 
 

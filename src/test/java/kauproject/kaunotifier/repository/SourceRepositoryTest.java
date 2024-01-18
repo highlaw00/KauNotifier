@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("")
 public class SourceRepositoryTest {
 
     @Autowired SourceRepository sourceRepository;
@@ -24,6 +26,6 @@ public class SourceRepositoryTest {
         // given
         List<Source> sourceList = sourceRepository.findAllList();
 
-        assertThat(sourceList.size()).isGreaterThan(0);
+        assertThat(sourceList.size()).isEqualTo(13);
     }
 }

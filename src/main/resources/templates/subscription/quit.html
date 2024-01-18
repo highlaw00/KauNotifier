@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/layout.html}">
+<head>
+</head>
+<body>
+<div layout:fragment="content">
+    <div>삭제하시겠습니까?</div>
+    <form method="post">
+        <div th:text="${email}"></div>
+        <div th:text="${name}"></div>
+        <button class="btn btn-outline-danger">삭제</button>
+    </form>
+</div>
+</body>
+</html>

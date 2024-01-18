@@ -40,5 +40,6 @@ public class MemberRepository {
      * @param member
      */
     public void remove(Member member) {
+        em.remove(member);
     }
 }

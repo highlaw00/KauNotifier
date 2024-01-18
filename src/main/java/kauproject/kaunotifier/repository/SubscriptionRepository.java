@@ -27,6 +27,14 @@ public class SubscriptionRepository {
         return subscriptionList;
     }
 
+    public Optional<Subscription> findOne(Long memberId, Long sourceId) {
+        List<Subscription> result = em.createQuery("select s from Subscription s where s.member.id = :memberId and s.source.id = :sourceId", Subscription.class)
+                .setParameter("memberId", memberId)
+                .setParameter("sourceId", sourceId)
+                .getResultList();
+        return result.stream().findAny();
+    }
+
     public Optional<Subscription> findById(Long id) {
         return Optional.ofNullable(em.find(Subscription.class, id));
     }
@@ -44,4 +52,9 @@ public class SubscriptionRepository {
                 .setParameter("id", member.getId())
                 .getResultList();
     }
+
+    public void deleteOne(Subscription subscription) {
+        em.remove(subscription);
+    }
+
 }

@@ -30,6 +30,21 @@
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+    <script>
+        const form = document.querySelector("form");
+        form.addEventListener("submit", e => alertContents(e))
+        const alertContents = (e) => {
+            const emailValue = document.getElementById("email").value;
+            const nameValue = document.getElementById("name").value;
+            const result = confirm(`이메일: ${emailValue} \n이름: ${nameValue} \n\n이메일과 이름은 추후에 변경할 수 없습니다. 위 정보로 구독 하시겠습니까?`);
+            if (!result) {
+                e.preventDefault();
+                return false;
+            } else {
+                return true;
+            }
+        }
+    </script>
 </div>
 </body>
 </html>

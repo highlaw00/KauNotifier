@@ -31,6 +31,13 @@ public class MemberRepository {
         return resultList.stream().findAny();
     }
 
+    public Optional<Member> findByEmail(String email) {
+        List<Member> resultList = em.createQuery("select m from Member m where m.email = :email", Member.class)
+                .setParameter("email", email)
+                .getResultList();
+        return resultList.stream().findAny();
+    }
+
     public List<Member> findAll() {
         return em.createQuery("select m from Member m", Member.class).getResultList();
     }

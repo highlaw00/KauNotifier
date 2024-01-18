@@ -9,12 +9,15 @@ import kauproject.kaunotifier.service.MemberService;
 import kauproject.kaunotifier.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -30,6 +33,15 @@ public class SubscribeController {
     private final MemberService memberService;
     private final SourceRepository sourceRepository;
 
+    /**
+     * 문자열 trim 미들웨어
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder dataBinder) {
+        StringTrimmerEditor stringTrimmerEditor = new StringTrimmerEditor(true);
+        dataBinder.registerCustomEditor(String.class, stringTrimmerEditor);
+    }
+
     @GetMapping("subscriptions/subscribe")
     public String subscribeHome(Model model) {
         SubscriptionForm subscriptionForm = new SubscriptionForm();
@@ -39,12 +51,22 @@ public class SubscribeController {
     }
 
     @PostMapping("subscriptions/subscribe")
-    public String subscribe(@Valid SubscriptionForm subscriptionForm, BindingResult bindingResult, Model model) {
+    public String subscribe(@Validated @ModelAttribute SubscriptionForm subscriptionForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 
         String name = subscriptionForm.getName();
         String email = subscriptionForm.getEmail();
         Member member = Member.createMember(name, email);
         List<Source> selectedSources = getSelectedSources(subscriptionForm);
+
+        // 중복 회원 검증 로직
+        if (memberService.isDuplicatedMember(member)) {
+            bindingResult.addError(new ObjectError("memberErr", "이미 등록된 이메일입니다."));
+        }
+
+        // Source Validation
+        if (selectedSources.isEmpty()) {
+            bindingResult.addError(new ObjectError("sourcesError", "공지사항 출처를 하나 이상 선택해주세요."));
+        }
 
         // BindingResult 사용
         if (bindingResult.hasErrors()) {
@@ -56,8 +78,11 @@ public class SubscribeController {
         // 성공 로직
         memberService.join(member);
         subscriptionService.subscribe(member, selectedSources);
+        redirectAttributes.addAttribute("email", email);
+        redirectAttributes.addAttribute("name", name);
+        redirectAttributes.addAttribute("status", true);
 
-        return "redirect:/";
+        return "redirect:/subscriptions/{email}";
     }
 
     @GetMapping("/subscriptions/find")
@@ -68,20 +93,17 @@ public class SubscribeController {
 
     @PostMapping("/subscriptions/find")
     public String findMember(@Validated @ModelAttribute MemberForm memberForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        String name = memberForm.getName();
+        String email = memberForm.getEmail();
+
+        if (memberService.find(Member.createMember(name, email)).isEmpty()) {
+            bindingResult.addError(new ObjectError("memberErr", "존재하지 않는 회원입니다."));
+        }
+
         if (bindingResult.hasErrors()) {
             // BindingResult는 자동으로 뷰에 넘어감!
             // redirect를 하는것이 아니다...
             return "/subscription/find";
-        }
-
-        String name = memberForm.getName();
-        String email = memberForm.getEmail();
-
-        Member findMember = isNotExistingMember(name, email);
-
-        // 찾은 회원이 존재하지 않음
-        if (findMember.getId() == null) {
-            return "redirect:/subscriptions/not-found";
         }
 
         redirectAttributes.addAttribute("status", true);
@@ -93,13 +115,13 @@ public class SubscribeController {
 
     @GetMapping("/subscriptions/{email}")
     public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
-        Member findMember = isNotExistingMember(name, email);
-
-        // 찾은 회원이 존재하지 않음
-        if (findMember.getId() == null) {
+        Member member = Member.createMember(name, email);
+        Optional<Member> memberOptional = memberService.find(member);
+        if (memberOptional.isEmpty()) {
             return "redirect:/subscriptions/not-found";
         }
 
+        Member findMember = memberOptional.get();
         model.addAttribute("member", findMember);
 
         return "/subscription/single";
@@ -107,12 +129,13 @@ public class SubscribeController {
 
     @GetMapping("/subscriptions/{email}/edit")
     public String getEditSubscriptions(@PathVariable String email, @RequestParam String name, Model model) {
-        Member findMember = isNotExistingMember(name, email);
-
-        // 찾은 회원이 존재하지 않음
-        if (findMember.getId() == null) {
+        Member member = Member.createMember(name, email);
+        Optional<Member> memberOptional = memberService.find(member);
+        if (memberOptional.isEmpty()) {
             return "redirect:/subscriptions/not-found";
         }
+
+        Member findMember = memberOptional.get();
 
         Map<Long, Source> subscribedSourceMap = findMember.getSubscriptions()
                 .stream()
@@ -178,8 +201,7 @@ public class SubscribeController {
         List<Source> selectedSourcesList = new ArrayList<>();
 
         for (Long sourceId : selectedSources) {
-            Source source = sourceMap.get(sourceId);
-            selectedSourcesList.add(source);
+            if (sourceMap.containsKey(sourceId)) selectedSourcesList.add(sourceMap.get(sourceId));
         }
 
         return selectedSourcesList;

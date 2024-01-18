@@ -15,8 +15,9 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public void join(Member member) {
+    public Long join(Member member) {
         memberRepository.save(member);
+        return member.getId();
     }
 
     public void quit(Member member) {
@@ -25,6 +26,11 @@ public class MemberService {
 
     public Optional<Member> find(Member member) {
         return memberRepository.findByNameAndEmail(member.getName(), member.getEmail());
+    }
+
+    public boolean isDuplicatedMember(Member member) {
+        // 중복 회원 예외 처리
+        return memberRepository.findByEmail(member.getEmail()).isPresent();
     }
 
 }

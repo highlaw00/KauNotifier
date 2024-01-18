@@ -9,11 +9,16 @@
             <label for="email" class="form-label">이메일</label>
             <input type="email" class="form-control" id="email" aria-describedby="emailHelp" th:field="*{email}" th:errorclass="is-invalid">
             <div class="invalid-feedback" th:errors="*{email}">Email Error</div>
+            <div class="emailHelp form-text">구독 시 입력했던 이메일을 입력해주세요.</div>
         </div>
         <div class="mb-3">
             <label for="name" class="form-label">이름</label>
             <input type="text" class="form-control" id="name" aria-describedby="nameHelp" th:field="*{name}" th:errorclass="is-invalid">
             <div class="invalid-feedback" th:errors="*{name}">Name Error</div>
+            <div class="nameHelp form-text">구독 시 입력했던 이름을 입력해주세요.</div>
+        </div>
+        <div th:if="${#fields.hasGlobalErrors()}" class="mb-3">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}" th:class="text-danger">글로벌 오류 메시지</p>
         </div>
         <button type="submit" class="btn btn-primary">조회</button>
     </form>

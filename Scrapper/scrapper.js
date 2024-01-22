@@ -11,7 +11,7 @@ class SchoolInfo {
     this.url = BASE_URL + this.index + SUFFIX;
     this.baseSelector = "#notiDfTable";
     this.titleSelector = this.baseSelector + TITLE_SELECTOR_SUFFIX;
-    this.writerSelector = this.baseSelector + WRITER_SELECTOR_SUFFIX;
+    this.writerSelector = this.baseSelector + WRITER_SELECTOR_SUFFIX; 
   }
 }
 
@@ -43,7 +43,6 @@ const test = async (targetInfo) => {
 
   const notices = await page.evaluate(
     (titleSelector, writerSelector) => {
-      console.log(titleSelector, writerSelector);
       const titleElements = document.querySelectorAll(titleSelector);
       const titleArray = Array.from(titleElements).map((element) => ({
         title: element.innerText,
@@ -80,7 +79,7 @@ const test = async (targetInfo) => {
   );
 
   notices.forEach((obj) => console.log(obj));
-
+  console.log(notices);
   await browser.close();
 };
 

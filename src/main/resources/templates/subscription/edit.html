@@ -4,22 +4,25 @@
 </head>
 <body>
 <div class="container" layout:fragment="content">
-    <form method="post" th:action="@{/subscriptions/{emailLocationVar}/edit (emailLocationVar=${member.email})}">
+    <form method="post" th:object="${subscriptionForm}" th:action="@{/subscriptions/{emailLocationVar}/edit (emailLocationVar=*{email})}">
         <div class="mt-3 mb-3">
             <label for="email" class="form-label">이메일</label>
-            <input type="email" class="form-control" id="email" th:field="${member.email}" readonly="readonly">
+            <input type="email" class="form-control" id="email" th:field="*{email}" readonly="readonly">
         </div>
         <div class="mb-3">
             <label for="name" class="form-label">이름</label>
-            <input type="text" class="form-control" id="name" th:field="${member.name}" readonly="readonly">
+            <input type="text" class="form-control" id="name" th:field="*{name}" readonly="readonly">
         </div>
         <div class="cotainer text-center mb-3">
             <div class="row row-cols-2">
-                <div class="col text-start" th:each="source: ${sources}">
-                    <input type="checkbox" class="form-check-input" th:value="${source.getId()}" th:field="${subscriptionForm.selectedSources}">
+                <div class="col text-start" th:each="source: *{sources}">
+                    <input type="checkbox" class="form-check-input" th:value="${source.getId()}" th:field="*{selectedSources}">
                     <label class="form-check-label" th:for="${#ids.prev('selectedSources')}" th:text="${source.getDescription()}"></label>
                 </div>
             </div>
+        </div>
+        <div th:if="${#fields.hasGlobalErrors()}" class="mb-3">
+            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}" th:class="text-danger">글로벌 오류 메시지</p>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

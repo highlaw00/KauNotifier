@@ -3,12 +3,23 @@
 <head>
 </head>
 <body>
-<div layout:fragment="content">
-    <div>삭제하시겠습니까?</div>
-    <form method="post">
-        <div th:text="${email}"></div>
-        <div th:text="${name}"></div>
-        <button class="btn btn-outline-danger">삭제</button>
+<div class="container" layout:fragment="content" >
+    <form method="post" th:object="${subscriptionQuitForm}" th:action="@{/subscriptions/{emailLocationVar}/quit (emailLocationVar=*{email})}">
+        <div class="mt-3 mb-3">
+            <label for="email" class="form-label">이메일</label>
+            <input type="email" class="form-control" id="email" name="email" th:field="*{email}" readonly="readonly">
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">이름</label>
+            <input type="text" class="form-control" id="name" name="name" th:field="*{name}" readonly="readonly">
+        </div>
+        <div class="mb-3">구독 리스트</div>
+        <ol class="list-group list-group-numbered mb-3">
+            <li class="list-group-item" th:each="subscription: *{subscriptionList}" th:text="${subscription.source.description}"></li>
+        </ol>
+        <div class="mb-1 text-danger">위 구독 정보를 삭제 하시겠습니까?</div>
+        <button class="btn btn-outline-danger" role="button">예</button>
+        <a class="btn btn-outline-primary" role="button" th:href="@{/subscriptions/{emailLocationVar}/edit (emailLocationVar=*{email}, name=*{name})}">아니오</a>
     </form>
 </div>
 </body>

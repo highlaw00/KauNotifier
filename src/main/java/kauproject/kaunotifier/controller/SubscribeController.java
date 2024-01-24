@@ -97,7 +97,7 @@ public class SubscribeController {
         String email = memberForm.getEmail();
 
         if (memberService.find(Member.createMember(name, email)).isEmpty()) {
-            bindingResult.addError(new ObjectError("memberErr", "존재하지 않는 회원입니다."));
+            bindingResult.addError(new ObjectError("memberErr", "존재하지 않거나 이름과 이메일이 맞지 않습니다."));
         }
 
         if (bindingResult.hasErrors()) {
@@ -127,6 +127,7 @@ public class SubscribeController {
         return "/subscription/single";
     }
 
+    // TODO: Refactor this.
     @GetMapping("/subscriptions/{email}/edit")
     public String getEditSubscriptions(@PathVariable String email, @RequestParam String name, Model model) {
         Member member = Member.createMember(name, email);
@@ -135,64 +136,86 @@ public class SubscribeController {
             return "redirect:/subscriptions/not-found";
         }
 
-        Member findMember = memberOptional.get();
-
-        Map<Long, Source> subscribedSourceMap = findMember.getSubscriptions()
-                .stream()
-                .collect(
-                        Collectors.toMap(
-                                subscription -> (subscription.getSource().getId()),
-                                Subscription::getSource
-                        )
-                );
-
         List<Source> sourceList = sourceRepository.findAllList();
+
+        SubscriptionForm subscriptionForm = new SubscriptionForm();
+        subscriptionForm.setName(name);
+        subscriptionForm.setEmail(email);
+        subscriptionForm.setSources(sourceList);
+
         model.addAttribute("sources", sourceList);
-        model.addAttribute("member", findMember);
-        model.addAttribute("subscribedSourceMap", subscribedSourceMap);
-        model.addAttribute("subscriptionForm", new SubscriptionForm());
+        model.addAttribute("subscriptionForm", subscriptionForm);
         return "/subscription/edit";
     }
 
     @PostMapping("/subscriptions/{email}/edit")
-    public String editSubscriptions(@PathVariable String email, @ModelAttribute SubscriptionForm subscriptionForm, RedirectAttributes redirectAttributes) {
-        String formName = subscriptionForm.getName();
-        Member findMember = isNotExistingMember(formName, email);
+    public String editSubscriptions(@PathVariable String email, @Validated @ModelAttribute SubscriptionForm subscriptionForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 
-        if (findMember.getId() == null) {
-            return "redirect:/subscriptions/not-found";
-        }
-
+        String name = subscriptionForm.getName();
+        Member member = Member.createMember(name, email);
         List<Source> selectedSources = getSelectedSources(subscriptionForm);
-        for (Source selectedSource : selectedSources) {
-            System.out.println("selectedSource = " + selectedSource.getDescription());
+
+        // 존재 검증
+        if (memberService.find(member).isEmpty()) {
+            bindingResult.addError(new ObjectError("memberErr", "존재하지 않거나 이름과 이메일이 맞지 않습니다."));
         }
 
-        subscriptionService.updateSubscribe(findMember, selectedSources);
+        // 출처 선택 검증
+        if (selectedSources.isEmpty()) {
+            bindingResult.addError(new ObjectError("sourcesError", "공지사항 출처를 하나 이상 선택해주세요."));
+        }
+
+        if (bindingResult.hasErrors()) {
+            subscriptionForm.setSources(sourceRepository.findAllList());
+            model.addAttribute("subscriptionForm", subscriptionForm);
+            return "/subscription/edit";
+        }
+
+        // 성공 로직
+        member = memberService.find(member).get();
+        subscriptionService.updateSubscribe(member, selectedSources);
 
         redirectAttributes.addAttribute("status", true);
         redirectAttributes.addAttribute("email", email);
-        redirectAttributes.addAttribute("name", formName);
+        redirectAttributes.addAttribute("name", name);
 
         return "redirect:/subscriptions/{email}";
     }
 
     @GetMapping("/subscriptions/{email}/quit")
     public String getQuit(@PathVariable String email, @RequestParam String name, Model model) {
-        model.addAttribute("email", email);
-        model.addAttribute("name", name);
-        model.addAttribute("subscriptionQuitForm", new SubscriptionQuitForm());
+        Member member = Member.createMember(name, email);
+        Optional<Member> memberOptional = memberService.find(member);
+        if (memberOptional.isEmpty()) {
+            return "redirect:/subscriptions/not-found";
+        }
+
+        member = memberOptional.get();
+
+        SubscriptionQuitForm subscriptionQuitForm = new SubscriptionQuitForm();
+        subscriptionQuitForm.setName(name);
+        subscriptionQuitForm.setEmail(email);
+        System.out.println("subscriptionQuitForm.getName() = " + subscriptionQuitForm.getName());
+        subscriptionQuitForm.setSubscriptionList(subscriptionService.findSubscriptionOfMember(member));
+
+        model.addAttribute("subscriptionQuitForm", subscriptionQuitForm);
         return "/subscription/quit";
     }
 
     @PostMapping("/subscriptions/{email}/quit")
-    public String quit(@PathVariable String email, @RequestParam String name, @ModelAttribute SubscriptionQuitForm quitForm, Model model) {
+    public String quit(@PathVariable String email, @ModelAttribute SubscriptionQuitForm quitForm) {
+
         // TODO: Validate member
-        Member member = memberService.find(Member.createMember(name, email)).get();
+        Member member = memberService.find(Member.createMember(quitForm.getName(), email)).get();
         subscriptionService.unsubscribe(member);
         memberService.quit(member);
 
         return "redirect:/";
+    }
+
+    @GetMapping("/subscriptions/not-found")
+    public String notFound() {
+        return "subscription/not-found";
     }
 
     private List<Source> getSelectedSources(SubscriptionForm subscriptionForm) {

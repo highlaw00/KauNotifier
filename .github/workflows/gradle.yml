@@ -59,10 +59,9 @@ jobs:
       - name: Execute built .jar file
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
+          host: ${{ secrets.SERVER_DOMAIN_NAME }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             sudo fuser -k 8080/tcp
             sudo nohup /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar &

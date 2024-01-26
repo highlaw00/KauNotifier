@@ -56,7 +56,13 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: SCP transfer
         run: scp -o StrictHostKeyChecking=no *.jar ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}:~/cicd
-      - name: Execute remote commands
-        run: |
-          ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo fuser -k 8080/tcp"
-          ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo nohup /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar &"
+      - name: Execute built .jar file
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            sudo fuser -k 8080/tcp
+            sudo nohup /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar &

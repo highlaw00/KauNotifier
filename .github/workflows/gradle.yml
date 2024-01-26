@@ -59,4 +59,4 @@ jobs:
       - name: Execute remote commands
         run: |
           ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo fuser -k 8080/tcp"
-          ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo nohup java -jar ~/cicd/*.jar &"
+          ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo nohup /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar &"

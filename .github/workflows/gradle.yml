@@ -9,9 +9,11 @@ name: Main Server CI/CD
 
 on:
   push:
-    branches: [ "server-main" ]
+    branches: 
+      - "server-main"
   pull_request:
-    branches: [ "server-main" ]
+    branches:
+      - "server-main"
 
 permissions:
   contents: read

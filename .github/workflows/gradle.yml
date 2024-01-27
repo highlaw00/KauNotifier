@@ -69,5 +69,5 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo fuser -k 8080/tcp
+            sudo fuser -k 80/tcp
             sudo nohup /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar &

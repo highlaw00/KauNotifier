@@ -85,13 +85,13 @@ public class SubscribeController {
         return "redirect:/subscriptions/{email}";
     }
 
-    @GetMapping("/subscriptions/find")
+    @GetMapping("subscriptions/find")
     public String getFind(Model model) {
         model.addAttribute("memberForm", new MemberForm());
         return "subscription/find";
     }
 
-    @PostMapping("/subscriptions/find")
+    @PostMapping("subscriptions/find")
     public String findMember(@Validated @ModelAttribute MemberForm memberForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         String name = memberForm.getName();
         String email = memberForm.getEmail();
@@ -103,7 +103,7 @@ public class SubscribeController {
         if (bindingResult.hasErrors()) {
             // BindingResult는 자동으로 뷰에 넘어감!
             // redirect를 하는것이 아니다...
-            return "/subscription/find";
+            return "subscription/find";
         }
 
         redirectAttributes.addAttribute("status", true);
@@ -113,7 +113,7 @@ public class SubscribeController {
         return "redirect:/subscriptions/{email}";
     }
 
-    @GetMapping("/subscriptions/{email}")
+    @GetMapping("subscriptions/{email}")
     public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
         Member member = Member.createMember(name, email);
         Optional<Member> memberOptional = memberService.find(member);
@@ -125,11 +125,11 @@ public class SubscribeController {
         log.info(String.valueOf(findMember));
         model.addAttribute("member", findMember);
 
-        return "/subscription/single";
+        return "subscription/single";
     }
 
     // TODO: Refactor this.
-    @GetMapping("/subscriptions/{email}/edit")
+    @GetMapping("subscriptions/{email}/edit")
     public String getEditSubscriptions(@PathVariable String email, @RequestParam String name, Model model) {
         Member member = Member.createMember(name, email);
         Optional<Member> memberOptional = memberService.find(member);
@@ -146,10 +146,10 @@ public class SubscribeController {
 
         model.addAttribute("sources", sourceList);
         model.addAttribute("subscriptionForm", subscriptionForm);
-        return "/subscription/edit";
+        return "subscription/edit";
     }
 
-    @PostMapping("/subscriptions/{email}/edit")
+    @PostMapping("subscriptions/{email}/edit")
     public String editSubscriptions(@PathVariable String email, @Validated @ModelAttribute SubscriptionForm subscriptionForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
 
         String name = subscriptionForm.getName();
@@ -169,7 +169,7 @@ public class SubscribeController {
         if (bindingResult.hasErrors()) {
             subscriptionForm.setSources(sourceRepository.findAllList());
             model.addAttribute("subscriptionForm", subscriptionForm);
-            return "/subscription/edit";
+            return "subscription/edit";
         }
 
         // 성공 로직
@@ -183,7 +183,7 @@ public class SubscribeController {
         return "redirect:/subscriptions/{email}";
     }
 
-    @GetMapping("/subscriptions/{email}/quit")
+    @GetMapping("subscriptions/{email}/quit")
     public String getQuit(@PathVariable String email, @RequestParam String name, Model model) {
         Member member = Member.createMember(name, email);
         Optional<Member> memberOptional = memberService.find(member);
@@ -200,10 +200,10 @@ public class SubscribeController {
         subscriptionQuitForm.setSubscriptionList(subscriptionService.findSubscriptionOfMember(member));
 
         model.addAttribute("subscriptionQuitForm", subscriptionQuitForm);
-        return "/subscription/quit";
+        return "subscription/quit";
     }
 
-    @PostMapping("/subscriptions/{email}/quit")
+    @PostMapping("subscriptions/{email}/quit")
     public String quit(@PathVariable String email, @ModelAttribute SubscriptionQuitForm quitForm) {
 
         // TODO: Validate member
@@ -214,7 +214,7 @@ public class SubscribeController {
         return "redirect:/";
     }
 
-    @GetMapping("/subscriptions/not-found")
+    @GetMapping("subscriptions/not-found")
     public String notFound() {
         return "subscription/not-found";
     }

@@ -122,6 +122,7 @@ public class SubscribeController {
         }
 
         Member findMember = memberOptional.get();
+        log.info(String.valueOf(findMember));
         model.addAttribute("member", findMember);
 
         return "/subscription/single";

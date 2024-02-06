@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -22,4 +23,7 @@ public class SubscriptionForm {
     private String email;
     private List<Source> sources;
     private List<Long> selectedSources;
+    private Map<Long, Source> sourceMap;
+
+    private String code;
 }

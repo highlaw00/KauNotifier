@@ -8,6 +8,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,7 +30,9 @@ public class SourceRepository {
                 .collect(
                         Collectors.toMap(
                                 s -> (s.getId()),
-                                s -> (s)
+                                s -> (s),
+                                (v1, v2) -> {throw new IllegalStateException("CAN'T MAKE LINKED HASH MAP.");},
+                                LinkedHashMap::new
                         )
                 );
     }

@@ -3,25 +3,8 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
 import { API } from '../config';
-
-const Checkboxes = ({origins, handleChange}) => {
-    const checkboxes = []
-    for (const id in origins) {
-        const origin = origins[id];
-        checkboxes.push(
-            <div key={origin.id} className="mb-3">
-                <Form.Check // prettier-ignore
-                    type={`checkbox`}
-                    id={origin.id}
-                    label={origin.description}
-                    value={origin.id}
-                    onChange={handleChange}
-                />
-            </div>
-        )
-    }
-    return checkboxes;
-}
+import { Checkboxes } from '../components/Checkboxes';
+import { redirect, useNavigate } from 'react-router-dom';
 
 const Subscribe = () => {
     const [origins, setOrigins] = useState({});
@@ -31,6 +14,7 @@ const Subscribe = () => {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [code, setCode] = useState("");
+    const navigate = useNavigate();
 
     // 공지사항 출처 불러오기
     useEffect(() => {
@@ -49,21 +33,23 @@ const Subscribe = () => {
     }, [])
 
     const sendEmail = () => {
-        if (isSent) alert("이미 전송되었습니다.");
-        else {
-            fetch(API.SEND_MAIL, {
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                method: 'post',
-                body: JSON.stringify({
-                    email: email
-                })
-            }).then((response) => response.json())
-            .then((data) => {
-                if (data.result === "success") setIsSent(true);
-            });
-        };
+        fetch(API.SEND_MAIL, {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: 'post',
+            body: JSON.stringify({
+                email: email
+            })
+        }).then((response) => response.json())
+        .then((data) => {
+            if (data.result === "success") {
+                setIsSent(true);
+                alert("인증 코드가 포함된 이메일이 발송되었습니다.");
+            } else {
+                alert(`인증 코드 전송에 실패하였습니다.\n${data.message}`);
+            }
+        });
     }
 
     const sendCode = () => {
@@ -82,6 +68,7 @@ const Subscribe = () => {
             console.log(data);
             if (data.result === "success") {
                 setIsCertificated(true);
+                alert("인증이 완료되었습니다.");
             }
         });
     }
@@ -113,11 +100,7 @@ const Subscribe = () => {
     }
 
     const handleFormSubmitted = (e) => {
-        // 인증 여부 확인
-        if (!isCertificated) {
-            alert("이메일 인증이 완료되지 않았습니다.");
-            return;
-        }
+        e.preventDefault();
         const form = e.currentTarget;
         if (form.checkValidity() === false || selectedOrigins.length === 0) {
             e.preventDefault();
@@ -130,29 +113,36 @@ const Subscribe = () => {
         submitForm();
     }
 
-    const submitForm = () => {
+    const submitForm = async () => {
         const payload = {
             email: email,
             name: name,
-            selectedSources: selectedOrigins
+            selectedSources: selectedOrigins,
+            code: code
         };
         console.dir(payload);
     
-        fetch(API.SUBSCRIBE, {
+        const response = await fetch(API.SUBSCRIBE, {
             headers: {
                 "Content-Type": "application/json"
             },
             method: 'post',
             body: JSON.stringify(payload)
         })
-        .then((response) => response.json())
-        .then((data) => console.log(data))
+        const data = await response.json();
+
+        if (data.result === "success") {
+            // redirect(`/subscription/${email}`)
+            navigate(`/subscription/${email}?name=${name}`)
+        } else {
+            alert(data.message);
+        }
     }
 
     return (
     <>
     <Form onSubmit={handleFormSubmitted} noValidate>
-        <InputGroup className="mt-3 mb-2">
+        <InputGroup className="mb-2">
             <Form.Control
                 placeholder="이메일을 작성해주세요."
                 value={email}
@@ -164,25 +154,26 @@ const Subscribe = () => {
                 인증 번호 발송
             </Button>
         </InputGroup>
-        <InputGroup className="mb-4">
+        <InputGroup className="mb-3">
             <Form.Control
                 placeholder="인증 코드를 작성해주세요."
                 value={code}
                 onChange={handleCodeChange}
             />
-            <Button variant='outline-secondary' onClick={sendCode}>
+            {/* <Button variant='outline-secondary' onClick={sendCode}>
                 인증하기
-            </Button>
+            </Button> */}
         </InputGroup>
-        <InputGroup className="mb-3">
-            <Form.Control
-                placeholder="이름을 작성해주세요."
-                value={name}
-                required
-                type="text"
-                onChange={handleNameChange}
+        <Form.Control
+            placeholder="이름을 작성해주세요."
+            id="nameInput"
+            aria-describedby="nameInputBlock"
+            value={name}
+            required
+            type="text"
+            onChange={handleNameChange}
+            className="mb-2"
             />
-        </InputGroup>
         <Checkboxes origins={origins} handleChange={handleCheckboxChange}></Checkboxes>
         <Button onClick={handleFormSubmitted}>구독 신청</Button>
     </Form>

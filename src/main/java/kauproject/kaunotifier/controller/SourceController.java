@@ -12,7 +12,7 @@ import java.util.Map;
 public class SourceController {
     private final SourceRepository sourceRepository;
 
-    @GetMapping("/sources")
+    @GetMapping("/api/sources")
     public SourceDto getSources() {
         Map<Long, Source> sources = sourceRepository.findAllMap();
         SourceDto sourceDto = new SourceDto();

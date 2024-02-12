@@ -34,6 +34,8 @@ dependencies {
 	runtimeOnly group: 'com.h2database', name: 'h2', version: '2.2.220'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.2.0'
+	implementation "software.amazon.awssdk:sesv2:2.20.109"
+	implementation 'org.json:json:20231013'
 }
 
 tasks.named('test') {

@@ -116,20 +116,20 @@ public class SubscribeController {
         return "redirect:/subscriptions/{email}";
     }
 
-    @GetMapping("subscriptions/{email}")
-    public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
-        Member member = Member.createMember(name, email);
-        Optional<Member> memberOptional = memberService.find(member);
-        if (memberOptional.isEmpty()) {
-            return "redirect:/subscriptions/not-found";
-        }
-
-        Member findMember = memberOptional.get();
-        log.info(String.valueOf(findMember));
-        model.addAttribute("member", findMember);
-
-        return "subscription/single";
-    }
+//    @GetMapping("subscriptions/{email}")
+//    public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
+//        Member member = Member.createMember(name, email);
+//        Optional<Member> memberOptional = memberService.find(member);
+//        if (memberOptional.isEmpty()) {
+//            return "redirect:/subscriptions/not-found";
+//        }
+//
+//        Member findMember = memberOptional.get();
+//        log.info(String.valueOf(findMember));
+//        model.addAttribute("member", findMember);
+//
+//        return "subscription/single";
+//    }
 
     // TODO: Refactor this.
     @GetMapping("subscriptions/{email}/edit")
@@ -222,7 +222,7 @@ public class SubscribeController {
         return "subscription/not-found";
     }
 
-    @PostMapping("/subscribe")
+    @PostMapping("/api/subscribe")
     public SubscribeDto subscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
         SubscribeDto res = new SubscribeDto();
 
@@ -258,6 +258,95 @@ public class SubscribeController {
         res.setName(name);
         res.setResult("success");
 
+        return res;
+    }
+
+    @GetMapping("/api/subscriptions/{email}")
+    public SubscribeDto findSubscribe(@PathVariable(name="email") String email, @RequestParam(name="name") String name) {
+        SubscribeDto res = new SubscribeDto();
+
+        Member member = Member.createMember(name, email);
+
+        if (memberService.find(member).isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        member = memberService.find(member).get();
+
+        List<Subscription> subscriptions = member.getSubscriptions();
+        List<Source> subscribingSources = new ArrayList<>();
+
+        for (Subscription subscription: subscriptions) {
+            subscribingSources.add(subscription.getSource());
+        }
+
+        res.setEmail(email);
+        res.setName(name);
+        res.setSubscribingSources(subscribingSources);
+        res.setResult("success");
+
+        return res;
+    }
+
+    @PutMapping("/api/subscriptions/{email}")
+    public SubscribeDto modifySubscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
+        SubscribeDto res = new SubscribeDto();
+
+        String email = req.getEmail();
+        String name = req.getName();
+
+        if (result.hasErrors()) {
+            res.setResult("fail");
+            res.setMessage("입력이 잘못되었습니다.");
+            return res;
+        }
+
+        Member member = Member.createMember(name, email);
+
+        if (memberService.find(member).isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        member = memberService.find(member).get();
+        List<Source> selectedSources = getSelectedSourcesAlt(req.getSelectedSources());
+        subscriptionService.updateSubscribe(member, selectedSources);
+
+        res.setResult("success");
+
+        return res;
+    }
+
+    @DeleteMapping("/api/subscriptions/{email}")
+    public SubscribeDto deleteSubscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
+        SubscribeDto res = new SubscribeDto();
+
+        String email = req.getEmail();
+        String name = req.getName();
+
+        if (result.hasErrors()) {
+            res.setResult("fail");
+            res.setMessage("입력이 잘못되었습니다.");
+            return res;
+        }
+
+        Optional<Member> memberOptional = memberService.find(Member.createMember(name, email));
+
+        if (memberOptional.isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        // TODO: Validate member
+        Member member = memberOptional.get();
+        subscriptionService.unsubscribe(member);
+        memberService.quit(member);
+
+        res.setResult("success");
         return res;
     }
 

@@ -2,8 +2,10 @@ package kauproject.kaunotifier.controller;
 
 import jakarta.validation.Valid;
 import kauproject.kaunotifier.redis.RedisService;
+import kauproject.kaunotifier.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +19,9 @@ import java.util.Random;
 public class EmailVerificationController {
 
     private final RedisService redisService;
+    private final EmailService emailService;
 
-    @PostMapping("/verify-request")
+    @PostMapping("/api/verify-request")
     public VerificationDto sendEmail(@Valid @RequestBody VerificationDto req, BindingResult result) {
 
         VerificationDto res = new VerificationDto();
@@ -47,13 +50,19 @@ public class EmailVerificationController {
         // 캐시에 저장 및 이메일 발송
         redisService.setValues(email, sixDigitRandomNumber, Duration.ofMinutes(3L));
 
+        String sender = "no-reply@kau-notifier.site";
+        JSONObject object = new JSONObject();
+        object.put("code", sixDigitRandomNumber);
+
+        emailService.sendVerificationCodeEmail(sender, email, object);
+
         res.setEmail(email);
         res.setResult("success");
 
         return res;
     }
 
-    @PostMapping("/verify")
+    @PostMapping("/api/verify")
     public VerificationDto verify(@Valid @RequestBody VerificationDto req) {
         String email = req.getEmail();
         String code = req.getCode();

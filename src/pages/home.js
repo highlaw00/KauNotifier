@@ -1,6 +1,7 @@
 import { Box, Card, CardContent, Stack, Typography, useMediaQuery } from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import { Button } from "@mui/material";
+import { Link } from "react-router-dom";
 
 const IntroCard = ({content}) => {
     const {header, title, body} = content;
@@ -66,8 +67,8 @@ const Home = () => {
             flexDirection: "column",
             justifyContent: "center"
         }}>
-            <Typography variant="body1" color="text.secondary">이메일로 간편하게</Typography>
-            <Typography variant="h4" sx={{fontWeight: "bold"}}>
+            <Typography variant="body1" color="primary.main">이메일로 간편하게</Typography>
+            <Typography variant="h4" sx={{fontWeight: "bold"}} color="primary.dark">
                 한국항공대학교 <br/> 
                 공지사항 구독 서비스
             </Typography>
@@ -78,7 +79,7 @@ const Home = () => {
             flexDirection: "column",
             justifyContent: "center"
         }}>
-            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}}>
+            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 무슨 서비스인가요?
             </Typography>
             <Typography gutterBottom={true}>항공대학교 홈페이지에 업로드 되는 공지사항을 이메일로 받아볼 수 있는 구독 서비스입니다.</Typography>
@@ -90,7 +91,7 @@ const Home = () => {
             flexDirection: "column",
             justifyContent: "center"
         }}>
-            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}}>
+            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 어떻게 사용하나요?
             </Typography>
             <Stack direction={{md:"row"}} spacing={1}>
@@ -103,7 +104,7 @@ const Home = () => {
             flexDirection: "column",
             justifyContent: "center"
         }}>
-            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}}>
+            <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 왜 만들었나요?
             </Typography>
             <Typography gutterBottom={true}>
@@ -119,7 +120,15 @@ const Home = () => {
             flexDirection: "column",
             justifyContent: "center"
         }}>
-            <Button href="/subscribe"><Typography variant="h3" sx={{fontWeight: "bold"}}>시작하기</Typography></Button>
+            
+            <Button color="info">
+                <Link to={"/subscribe"} style={{textDecoration: "inherit", color: "inherit"}}>
+                    <Typography variant="h3" sx={{fontWeight: "bold"}}>
+                        시작하기
+                    </Typography>
+                </Link>
+            </Button>
+            
         </Box>
     ]
     

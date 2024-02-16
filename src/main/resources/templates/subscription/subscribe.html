@@ -19,30 +19,46 @@
         </div>
         <div class="cotainer text-center mb-3">
             <div class="row row-cols-2">
-                    <div class="col text-start" th:each="source: *{sources}">
-                        <input type="checkbox" class="form-check-input" th:value="${source.getId()}" th:field="*{selectedSources}">
-                        <label class="form-check-label" th:for="${#ids.prev('selectedSources')}" th:text="${source.getDescription()}"></label>
+<!--                    <div class="col text-start" th:each="source: *{sources}">-->
+<!--                        <input type="checkbox" class="form-check-input" th:value="${source.getId()}" th:field="*{selectedSources}">-->
+<!--                        <label class="form-check-label" th:for="${#ids.prev('selectedSources')}" th:text="${source.getDescription()}"></label>-->
+<!--                    </div>-->
+                    <div class="col text-start" th:each="source: *{sourceMap}">
+                        <input type="checkbox" class="form-check-input" th:field="${subscriptionForm.selectedSources}" th:value="${source.key}">
+                        <label class="form-check-label" th:for="|selectedSources${source.key}|" th:text="${source.value.description}"></label>
                     </div>
             </div>
         </div>
         <div th:if="${#fields.hasGlobalErrors()}" class="mb-3">
             <p th:each="err : ${#fields.globalErrors()}" th:text="${err}" th:class="text-danger">글로벌 오류 메시지</p>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">구독하기</button>
     </form>
     <script>
         const form = document.querySelector("form");
         form.addEventListener("submit", e => alertContents(e))
-        const alertContents = (e) => {
+        const alertContents = async (e) => {
+            e.preventDefault();
             const emailValue = document.getElementById("email").value;
             const nameValue = document.getElementById("name").value;
-            const result = confirm(`이메일: ${emailValue} \n이름: ${nameValue} \n\n이메일과 이름은 추후에 변경할 수 없습니다. 위 정보로 구독 하시겠습니까?`);
-            if (!result) {
-                e.preventDefault();
-                return false;
-            } else {
-                return true;
-            }
+            const response = await fetch("/verify-request", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                },
+                body: JSON.stringify({
+                    email: emailValue
+                })
+            });
+            const promise = response.json();
+            promise.then(data => {console.log(data)})
+            // const result = confirm(`이메일: ${emailValue} \n이름: ${nameValue} \n\n이메일과 이름은 추후에 변경할 수 없습니다. 위 정보로 구독 하시겠습니까?`);
+            // if (!result) {
+            //     e.preventDefault();
+            //     return false;
+            // } else {
+            //     return true;
+            // }
         }
     </script>
 </div>

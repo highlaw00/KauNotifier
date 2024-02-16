@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import kauproject.kaunotifier.domain.Member;
 import kauproject.kaunotifier.domain.Source;
 import kauproject.kaunotifier.domain.Subscription;
+import kauproject.kaunotifier.redis.RedisService;
 import kauproject.kaunotifier.repository.SourceRepository;
 import kauproject.kaunotifier.service.MemberService;
 import kauproject.kaunotifier.service.SubscriptionService;
+import kauproject.kaunotifier.service.VerificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -24,7 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @Slf4j
 public class SubscribeController {
@@ -32,6 +34,7 @@ public class SubscribeController {
     private final SubscriptionService subscriptionService;
     private final MemberService memberService;
     private final SourceRepository sourceRepository;
+    private final VerificationService verificationService;
 
     /**
      * 문자열 trim 미들웨어
@@ -45,7 +48,7 @@ public class SubscribeController {
     @GetMapping("subscriptions/subscribe")
     public String subscribeHome(Model model) {
         SubscriptionForm subscriptionForm = new SubscriptionForm();
-        subscriptionForm.setSources(sourceRepository.findAllList());
+        subscriptionForm.setSourceMap(sourceRepository.findAllMap());
         model.addAttribute("subscriptionForm", subscriptionForm);
         return "subscription/subscribe";
     }
@@ -70,12 +73,12 @@ public class SubscribeController {
 
         // BindingResult 사용
         if (bindingResult.hasErrors()) {
-            subscriptionForm.setSources(sourceRepository.findAllList());
+            subscriptionForm.setSourceMap(sourceRepository.findAllMap());
             model.addAttribute("subscriptionForm", subscriptionForm);
             return "subscription/subscribe";
         }
 
-        // 성공 로직
+        // 성공 로직 -> 저장을 일단하기
         memberService.join(member);
         subscriptionService.subscribe(member, selectedSources);
         redirectAttributes.addAttribute("email", email);
@@ -113,20 +116,20 @@ public class SubscribeController {
         return "redirect:/subscriptions/{email}";
     }
 
-    @GetMapping("subscriptions/{email}")
-    public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
-        Member member = Member.createMember(name, email);
-        Optional<Member> memberOptional = memberService.find(member);
-        if (memberOptional.isEmpty()) {
-            return "redirect:/subscriptions/not-found";
-        }
-
-        Member findMember = memberOptional.get();
-        log.info(String.valueOf(findMember));
-        model.addAttribute("member", findMember);
-
-        return "subscription/single";
-    }
+//    @GetMapping("subscriptions/{email}")
+//    public String showSingle(@PathVariable String email, @RequestParam String name, Model model) {
+//        Member member = Member.createMember(name, email);
+//        Optional<Member> memberOptional = memberService.find(member);
+//        if (memberOptional.isEmpty()) {
+//            return "redirect:/subscriptions/not-found";
+//        }
+//
+//        Member findMember = memberOptional.get();
+//        log.info(String.valueOf(findMember));
+//        model.addAttribute("member", findMember);
+//
+//        return "subscription/single";
+//    }
 
     // TODO: Refactor this.
     @GetMapping("subscriptions/{email}/edit")
@@ -219,12 +222,151 @@ public class SubscribeController {
         return "subscription/not-found";
     }
 
+    @PostMapping("/api/subscribe")
+    public SubscribeDto subscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
+        SubscribeDto res = new SubscribeDto();
+
+        // 포맷 검증
+        if (result.hasErrors()) {
+            res.setMessage("이메일, 이름, 공지사항 체크 여부를 확인해주세요.");
+            res.setResult("fail");
+            return res;
+        }
+
+        // 이메일 인증 여부 검증
+        if (!verificationService.verify(req.getEmail(), req.getCode())) {
+            res.setMessage("인증 코드가 유효하지 않습니다.");
+            res.setResult("fail");
+            return res;
+        }
+
+        // 이메일 중복 검증
+        String email = req.getEmail();
+        String name = req.getName();
+        Member member = Member.createMember(name, email);
+        if (memberService.isDuplicatedMember(member)) {
+            res.setMessage("이미 존재하는 회원입니다.");
+            res.setResult("fail");
+            return res;
+        }
+
+        // 회원 저장
+        List<Source> selectedSources = getSelectedSourcesAlt(req.getSelectedSources());
+        memberService.join(member);
+        subscriptionService.subscribe(member, selectedSources);
+        res.setEmail(email);
+        res.setName(name);
+        res.setResult("success");
+
+        return res;
+    }
+
+    @GetMapping("/api/subscriptions/{email}")
+    public SubscribeDto findSubscribe(@PathVariable(name="email") String email, @RequestParam(name="name") String name) {
+        SubscribeDto res = new SubscribeDto();
+
+        Member member = Member.createMember(name, email);
+
+        if (memberService.find(member).isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        member = memberService.find(member).get();
+
+        List<Subscription> subscriptions = member.getSubscriptions();
+        List<Source> subscribingSources = new ArrayList<>();
+
+        for (Subscription subscription: subscriptions) {
+            subscribingSources.add(subscription.getSource());
+        }
+
+        res.setEmail(email);
+        res.setName(name);
+        res.setSubscribingSources(subscribingSources);
+        res.setResult("success");
+
+        return res;
+    }
+
+    @PutMapping("/api/subscriptions/{email}")
+    public SubscribeDto modifySubscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
+        SubscribeDto res = new SubscribeDto();
+
+        String email = req.getEmail();
+        String name = req.getName();
+
+        if (result.hasErrors()) {
+            res.setResult("fail");
+            res.setMessage("입력이 잘못되었습니다.");
+            return res;
+        }
+
+        Member member = Member.createMember(name, email);
+
+        if (memberService.find(member).isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        member = memberService.find(member).get();
+        List<Source> selectedSources = getSelectedSourcesAlt(req.getSelectedSources());
+        subscriptionService.updateSubscribe(member, selectedSources);
+
+        res.setResult("success");
+
+        return res;
+    }
+
+    @DeleteMapping("/api/subscriptions/{email}")
+    public SubscribeDto deleteSubscribe(@Valid @RequestBody SubscribeDto req, BindingResult result) {
+        SubscribeDto res = new SubscribeDto();
+
+        String email = req.getEmail();
+        String name = req.getName();
+
+        if (result.hasErrors()) {
+            res.setResult("fail");
+            res.setMessage("입력이 잘못되었습니다.");
+            return res;
+        }
+
+        Optional<Member> memberOptional = memberService.find(Member.createMember(name, email));
+
+        if (memberOptional.isEmpty()) {
+            res.setResult("fail");
+            res.setMessage("존재하지 않거나 이름과 이메일이 맞지 않습니다.");
+            return res;
+        }
+
+        // TODO: Validate member
+        Member member = memberOptional.get();
+        subscriptionService.unsubscribe(member);
+        memberService.quit(member);
+
+        res.setResult("success");
+        return res;
+    }
+
+    // TODO: Delete this method and usages.
     private List<Source> getSelectedSources(SubscriptionForm subscriptionForm) {
         List<Long> selectedSources = subscriptionForm.getSelectedSources();
         Map<Long, Source> sourceMap = sourceRepository.findAllMap();
         List<Source> selectedSourcesList = new ArrayList<>();
 
         for (Long sourceId : selectedSources) {
+            if (sourceMap.containsKey(sourceId)) selectedSourcesList.add(sourceMap.get(sourceId));
+        }
+
+        return selectedSourcesList;
+    }
+
+    private List<Source> getSelectedSourcesAlt(List<Long> selectedIds) {
+        Map<Long, Source> sourceMap = sourceRepository.findAllMap();
+        List<Source> selectedSourcesList = new ArrayList<>();
+        for (Long sourceId : selectedIds) {
             if (sourceMap.containsKey(sourceId)) selectedSourcesList.add(sourceMap.get(sourceId));
         }
 

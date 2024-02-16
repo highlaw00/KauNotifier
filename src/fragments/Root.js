@@ -1,11 +1,11 @@
-import { AppBar, Box, Toolbar, Typography, Button, IconButton, Drawer, SwipeableDrawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, useMediaQuery } from '@mui/material';
+import { AppBar, Box, Toolbar, Typography, IconButton, SwipeableDrawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, useMediaQuery } from '@mui/material';
 import { Home, Mail, Menu, FindInPage } from '@mui/icons-material';
 import { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 
 const Root = () => {
   const isMobile = useMediaQuery("(max-width: 767px)");
-  console.log(isMobile);
+
   const [isOpen, setIsOpen] = useState(false);
   const toggleDrawer = (open) => (e) => {
     if (
@@ -82,9 +82,11 @@ const Root = () => {
           bgcolor: "primary.extremeLight"
         }}>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} color={"primary.dark"}>
-                Kau Notifier
-            </Typography>
+            <Link to={"/"} style={{textDecoration: "inherit", color: "inherit", flexGrow: 1}}>
+              <Typography variant="h6" component="div" color={"primary.dark"}>
+                  Kau Notifier
+              </Typography>
+            </Link>
             <IconButton
               size="large"
               color="primary.dark"

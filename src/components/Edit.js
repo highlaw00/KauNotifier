@@ -53,7 +53,6 @@ const Edit = () => {
                 if (data.result === "success") {
                     setUser(data);
                     setIsLoaded(true);
-                    console.log(data);
                 } else {
                     setMessage(data.message)
                 }
@@ -104,7 +103,6 @@ const Edit = () => {
         e.preventDefault();
         // 공지사항 출처(Object) -> Array 형태로 변경
         const selectedArr = Object.keys(selectedSources).filter((id) => selectedSources[id] === true)
-        console.log(selectedArr);
         
         const payload = {
             email: user.email,
@@ -183,28 +181,6 @@ const Edit = () => {
                 </Grid>
             </FormControl>
         </>
-        // <Form onSubmit={handleFormSubmitted} noValidate>
-        //     <Form.Label htmlFor="inputEmail">이메일 주소</Form.Label>
-        //     <Form.Control
-        //         id="inputEmail"
-        //         value={user.email}
-        //         required
-        //         readOnly
-        //         type="email"
-        //         className="mb-2"
-        //     />
-        //     <Form.Label htmlFor="inputName">이름</Form.Label>
-        //     <Form.Control
-        //         id="inputName"
-        //         value={user.name}
-        //         required
-        //         readOnly
-        //         type="text"
-        //         className="mb-2"
-        //         />
-        //     <Checkboxes origins={origins} handleChange={handleCheckboxChange}></Checkboxes>
-        //     <Button onClick={handleFormSubmitted}>구독 수정</Button>
-        // </Form>
         : <h1>{message}</h1>
     )
 }

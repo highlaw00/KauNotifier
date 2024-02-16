@@ -1,183 +1,298 @@
-import { useEffect, useState } from 'react'
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import Button from 'react-bootstrap/Button';
-import { API } from '../config';
-import { Checkboxes } from '../components/Checkboxes';
-import { redirect, useNavigate } from 'react-router-dom';
+import { TextField, Typography, FormControl, Grid, Button, useMediaQuery, FormControlLabel, Checkbox, Snackbar } from "@mui/material";
+import { EmailOutlined } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { API } from "../config";
+import { useNavigate } from "react-router-dom";
+
+const fetchAndSetSources = async (setSources, setSelectedSources) => {
+    const response = await fetch(API.SOURCES, {
+        headers: {
+            "Content-Type": "application/json"
+        },
+        method: "get"
+    })
+
+    const data = await response.json();
+    setSources(data.sourceMap);
+
+    const newObj = {};
+    Object.values(data.sourceMap).forEach((source) => {
+        newObj[source.id] = false;
+    })
+    setSelectedSources(newObj);
+}
+
+const isViolatedEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return !re.test(email);
+}
+
+const isViolatedName = (name) => {
+    const re = /^[a-zA-Z가-힣\s]+$/;
+    return !re.test(name);
+}
+
+const isViolatedCode = (code) => {
+    const re = /^\d{6}$/;
+    return !re.test(code);
+}
+
+const isEmptySources = (sources) => {
+    let result = false;
+    Object.keys(sources).forEach((existence) => {
+        if (!existence) {
+            result = true;
+            return false;
+        }
+    })
+    return result;
+}
+
+const CheckBoxes = ({sources, selectedSources, handleCheck}) => {
+    const sourceValues = Object.values(sources);
+    return sourceValues.map((source) => {
+        return (
+            <Grid key={source.id} item xs={6} justifyItems={"start"}>
+                <FormControlLabel
+                    control={
+                    <Checkbox id={source.id.toString()} checked={selectedSources[source.id]} onChange={handleCheck}/>
+                    }
+                    label={`${source.description}`}
+                />
+            </Grid>
+        )
+    })
+}
 
 const Subscribe = () => {
-    const [origins, setOrigins] = useState({});
-    const [selectedOrigins, setSelectedOrigins] = useState([]);
-    const [isSent, setIsSent] = useState(false);
-    const [isCertificated, setIsCertificated] = useState(false);
-    const [email, setEmail] = useState("");
-    const [name, setName] = useState("");
-    const [code, setCode] = useState("");
+    const isMobile = useMediaQuery("(max-width: 767px)")
     const navigate = useNavigate();
 
-    // 공지사항 출처 불러오기
-    useEffect(() => {
-        // Get Origins and Update.
-        fetch(API.SOURCES, {
-            headers: {
-                "Content-Type": "application/json"
-            },
-            method: 'get'
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            setOrigins(data.sourceMap);
-            console.log(origins);
-        })
-    }, [])
+    const [sources, setSources] = useState({});
+    const [selectedSources, setSelectedSources] = useState({});
+    const [formState, setFormState] = useState({
+        emailState: {
+            value: "",
+            isViolated: false,
+            helpText: "실제로 사용하는 이메일을 입력해주세요.",
+            errorText: "올바르지 않은 이메일 형식입니다."
+        },
+        nameState: {
+            value: "",
+            isViolated: false,
+            helpText: "이름은 식별을 위해서만 사용되며, 실제 이름이 아니어도 됩니다.",
+            errorText: "이름은 한글과 영어로만 입력이 가능합니다."
+        },
+        codeState: {
+            value: "",
+            isViolated: false,
+            helpText: "이메일에 전송된 인증 코드를 입력해주세요.",
+            errorText: "인증 코드 오류"
+        },
+    })
+    const [isSent, setIsSent] = useState(false);
+    const [isSnackBarOpen, setSnackBarOpen] = useState(false);
 
-    const sendEmail = () => {
-        fetch(API.SEND_MAIL, {
+    const handleCheck = (e) => {
+        const id = e.target.id;
+        const newObj = {...selectedSources}
+        if (e.target.checked) {
+            newObj[id] = true;
+            setSelectedSources(newObj);
+        } else {
+            newObj[id] = false;
+            setSelectedSources(newObj);
+        }
+    }
+
+    const handleStateChange = (e) => {
+        const id = e.target.id;
+        setFormState((prev) => {
+            const newValue = e.target.value;
+            let newState, keyName;
+            if (id.startsWith("email")) {
+                newState = prev.emailState;
+                keyName = "emailState";
+            } else if (id.startsWith("name")) {
+                newState = prev.nameState;
+                keyName = "nameState";
+            } else if (id.startsWith("code")) {
+                newState = prev.codeState;
+                keyName = "codeState";
+            }
+            newState.value = newValue;
+            return {
+                ...prev,
+                [keyName]: newState
+            }
+        })
+    }
+
+    const openSnackBar = () => {setSnackBarOpen(true)}
+    const closeSnackBar = () => {setSnackBarOpen(false)}
+
+    const sendCode = async () => {
+        const isViolated = isViolatedEmail(formState.emailState.value);
+        setFormState((prev) => {
+            const newObj = { ...prev }
+            newObj.emailState.isViolated = isViolated;
+            return newObj;
+        })
+        if (isViolated) return;
+        
+        const email = formState.emailState.value;
+        const response = await fetch(API.SEND_MAIL, {
             headers: {
                 "Content-Type": "application/json"
             },
-            method: 'post',
+            method: "post",
             body: JSON.stringify({
                 email: email
             })
-        }).then((response) => response.json())
-        .then((data) => {
-            if (data.result === "success") {
-                setIsSent(true);
-                alert("인증 코드가 포함된 이메일이 발송되었습니다.");
-            } else {
-                alert(`인증 코드 전송에 실패하였습니다.\n${data.message}`);
-            }
-        });
-    }
-
-    const sendCode = () => {
-        fetch(API.VERIFY, {
-            headers: {
-                "Content-Type": "application/json"
-            },
-            method: 'post',
-            body: JSON.stringify({
-                email: email,
-                code: code
-            })
         })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
-            if (data.result === "success") {
-                setIsCertificated(true);
-                alert("인증이 완료되었습니다.");
-            }
-        });
-    }
 
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-    }
+        const data = await response.json();
 
-    const handleNameChange = (e) => {
-        setName(e.target.value);
-    }
+        console.log(data);
 
-    const handleCodeChange = (e) => {
-        setCode(e.target.value);
-    }
-
-    // 체크박스 클릭시 selectedSources 변경
-    const handleCheckboxChange = (e) => {
-        const selectedOriginId = e.target.value;
-        const isChecked = e.target.checked;
-        // 선택한 경우
-        if (isChecked) {
-            setSelectedOrigins(prevOrigins => [...prevOrigins, selectedOriginId])
+        if (data.result === "success") {
+            setIsSent(true);
+            openSnackBar();
         }
-        // 선택해제한 경우 
-        else {
-            setSelectedOrigins(prevOrigins => prevOrigins.filter((originId) => originId !== selectedOriginId));
-        }
+        else alert(`인증 코드 전송에 실패하였습니다. \n${data.message}`)
     }
 
-    const handleFormSubmitted = (e) => {
-        e.preventDefault();
-        const form = e.currentTarget;
-        if (form.checkValidity() === false || selectedOrigins.length === 0) {
-            e.preventDefault();
-            e.stopPropagation();
-            alert("Form invalid");
-            return;
-        }
+    const sendForm = async () => {
+        const email = formState.emailState.value;
+        const name = formState.nameState.value;
+        const code = formState.codeState.value;
 
-        // 폼 제출
-        submitForm();
-    }
+        const isEmailViolated = isViolatedEmail(email);
+        const isNameViolated = isViolatedName(name);
+        const isCodeViolated = isViolatedCode(code);
+        const isEmpty = isEmptySources(selectedSources);
 
-    const submitForm = async () => {
-        const payload = {
-            email: email,
-            name: name,
-            selectedSources: selectedOrigins,
-            code: code
-        };
-        console.dir(payload);
-    
+        setFormState((prev) => {
+            const newObj = { ...prev }
+            newObj.emailState.isViolated = isEmailViolated;
+            newObj.nameState.isViolated = isNameViolated;
+            newObj.codeState.isViolated = isCodeViolated;
+            return newObj;
+        })
+
+        if (isEmailViolated || isNameViolated || isCodeViolated || isEmpty) return;
+
+        // 공지사항 출처(Object) -> Array 형태로 변경
+        const selectedArr = Object.keys(selectedSources).filter((id) => selectedSources[id] === true)
+        console.log(selectedArr);
+        
         const response = await fetch(API.SUBSCRIBE, {
             headers: {
                 "Content-Type": "application/json"
             },
-            method: 'post',
-            body: JSON.stringify(payload)
+            method: "post",
+            body: JSON.stringify({
+                email: email,
+                name: name,
+                code: code,
+                selectedSources: selectedArr
+            })
         })
-        const data = await response.json();
 
+        const data = await response.json();
         if (data.result === "success") {
-            // redirect(`/subscription/${email}`)
             navigate(`/subscription/${email}?name=${name}`)
-        } else {
-            alert(data.message);
         }
     }
 
+    // 공지사항 출처 가져오기
+    useEffect(() => {
+        fetchAndSetSources(setSources, setSelectedSources);
+    }, [])
+
     return (
-    <>
-    <Form onSubmit={handleFormSubmitted} noValidate>
-        <InputGroup className="mb-2">
-            <Form.Control
-                placeholder="이메일을 작성해주세요."
-                value={email}
-                required
-                type="email"
-                onChange={handleEmailChange}
-            />
-            <Button variant='outline-secondary' onClick={sendEmail}>
-                인증 번호 발송
-            </Button>
-        </InputGroup>
-        <InputGroup className="mb-3">
-            <Form.Control
-                placeholder="인증 코드를 작성해주세요."
-                value={code}
-                onChange={handleCodeChange}
-            />
-            {/* <Button variant='outline-secondary' onClick={sendCode}>
-                인증하기
-            </Button> */}
-        </InputGroup>
-        <Form.Control
-            placeholder="이름을 작성해주세요."
-            id="nameInput"
-            aria-describedby="nameInputBlock"
-            value={name}
-            required
-            type="text"
-            onChange={handleNameChange}
-            className="mb-2"
-            />
-        <Checkboxes origins={origins} handleChange={handleCheckboxChange}></Checkboxes>
-        <Button onClick={handleFormSubmitted}>구독 신청</Button>
-    </Form>
-    </>
+        <>
+            <Typography variant="h4" sx={{fontWeight: "bold"}} color="primary.main" gutterBottom>구독 신청</Typography>
+            <FormControl sx={{minWidth: "100%"}}>
+                <Grid container justifyContent="center" alignItems="center" spacing={2}>
+                    <Grid item xs={8}>
+                        <TextField 
+                            id="email-field" 
+                            fullWidth label="이메일"
+                            error={formState.emailState.isViolated}
+                            helperText={formState.emailState.isViolated ? formState.emailState.errorText : formState.emailState.helpText} 
+                            value={formState.emailState.value} 
+                            onChange={handleStateChange} 
+                            type="email"
+                        >
+                            이메일
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={4} paddingBottom={3}>
+                        {/* PC 환경 & 전송 되지 않은 경우에만 아이콘 노출 */}
+                        <Button 
+                            endIcon={!isSent && !isMobile ? <EmailOutlined/> : null} 
+                            sx={{
+                                height: "100%",
+                                width: "100%"
+                            }}
+                            onClick={sendCode}
+                            disabled={isSent}
+                            variant="outlined"
+                        >
+                            {isSent ? "전송 완료" : "코드 전송"}
+                        </Button>
+                        <Snackbar 
+                            open={isSnackBarOpen}
+                            onClose={closeSnackBar}
+                            message="인증 코드가 발송되었습니다."
+                            anchorOrigin={{vertical: "top", horizontal: "center"}}
+                            autoHideDuration={3000}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField 
+                            id="code-field" 
+                            fullWidth label="인증 코드" 
+                            error={formState.codeState.isViolated}
+                            helperText={formState.codeState.isViolated ? formState.codeState.errorText : formState.codeState.helpText} 
+                            value={formState.codeState.value} 
+                            onChange={handleStateChange}
+                        >
+                            인증 코드
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField 
+                            id="name-field" 
+                            fullWidth label="이름" 
+                            error={formState.nameState.isViolated}
+                            helperText={formState.nameState.isViolated ? formState.nameState.errorText : formState.nameState.helpText} 
+                            value={formState.nameState.value} 
+                            onChange={handleStateChange}
+                        >
+                            이름
+                        </TextField>
+                    </Grid>
+                    <Grid container justifyContent={"flex-start"} item >
+                        {sources && <CheckBoxes sources={sources} selectedSources={selectedSources} handleCheck={handleCheck} />}
+                    </Grid>
+                    <Grid item xs={8}></Grid>
+                    <Grid item xs={4}>
+                        <Button 
+                            sx={{
+                                height: "100%",
+                                width: "100%"
+                            }}
+                            onClick={sendForm}
+                            variant="outlined"
+                        >
+                            신청하기
+                        </Button>
+                    </Grid>
+                </Grid>
+            </FormControl>
+        </>
     )
 }
 

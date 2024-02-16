@@ -7,12 +7,11 @@ import ErrorPage from './pages/error';
 import Subscription from './components/Subscription';
 import Edit from './components/Edit';
 import { createTheme, ThemeProvider } from '@mui/material';
-import SubscribeTest from './pages/SubscribeTest'
+import Subscribe from './pages/Subscribe'
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Container from 'react-bootstrap/esm/Container';
 import Test from './pages/Test';
 
 const theme = createTheme({
@@ -44,7 +43,7 @@ const router = createBrowserRouter([
       },
       {
         path: "subscribe",
-        element: <SubscribeTest></SubscribeTest>
+        element: <Subscribe></Subscribe>
       },
       {
         path: "subscriptions",
@@ -59,19 +58,6 @@ const router = createBrowserRouter([
         element: <Edit></Edit>
       },
     ]
-  },
-  // {
-  //   path: "subscribe/test",
-  //   element: <SubscribeTest></SubscribeTest>
-  // },
-  // {
-  //   path: "subscriptions",
-  //   element: <View></View>
-  // },
-  
-  {
-    path: "test",
-    element: <Test></Test>
   }
 ]);
 
@@ -79,7 +65,7 @@ function App() {
   return (
     <div>
       <ThemeProvider theme={theme}>
-      <RouterProvider router={router}/>
+        <RouterProvider router={router}/>
       </ThemeProvider>
     </div>
   );

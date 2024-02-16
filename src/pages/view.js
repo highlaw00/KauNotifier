@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { redirect, useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { API } from '../config';
 import { Grid, TextField, Typography, FormControl, Button } from '@mui/material';
 
@@ -30,8 +30,6 @@ const View = () => {
             errorText: "이름은 한글과 영어로만 입력이 가능합니다."
         }
     })
-    
-    const [subscriptionData, setSubscriptionData] = useState({});
 
     const handleStateChange = (e) => {
         const id = e.target.id;

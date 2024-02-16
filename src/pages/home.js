@@ -22,23 +22,9 @@ const IntroCard = ({content}) => {
     )
 }
 
-const Page = ({text}) => {
-    return (
-        <Box sx={{minHeight: "90vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center"}} >
-            <Typography variant="h4">
-                {text}
-            </Typography>
-        </Box>
-    );
-}
-
 const Home = () => {
 
     const isMobile = useMediaQuery("(max-width: 992px)");
-    console.log(isMobile);
 
     const cardContents = [
         {
@@ -58,7 +44,7 @@ const Home = () => {
         },
     ]
 
-    const introCards = cardContents.map((elem) => <IntroCard content={elem}/>)
+    const introCards = cardContents.map((elem, idx) => <IntroCard key={idx} content={elem}/>)
 
     const pages = [
         <Box sx={{
@@ -66,7 +52,9 @@ const Home = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center"
-        }}>
+        }}
+            key={"1"}
+        >
             <Typography variant="body1" color="primary.main">이메일로 간편하게</Typography>
             <Typography variant="h4" sx={{fontWeight: "bold"}} color="primary.dark">
                 한국항공대학교 <br/> 
@@ -78,7 +66,9 @@ const Home = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center"
-        }}>
+        }}
+            key={"2"}
+        >
             <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 무슨 서비스인가요?
             </Typography>
@@ -90,7 +80,9 @@ const Home = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center"
-        }}>
+        }} 
+            key={"3"}
+        >
             <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 어떻게 사용하나요?
             </Typography>
@@ -103,7 +95,9 @@ const Home = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center"
-        }}>
+        }} 
+            key={"4"}
+        >
             <Typography variant="h4" gutterBottom={true} sx={{fontWeight: "bold"}} color="primary.dark">
                 왜 만들었나요?
             </Typography>
@@ -119,7 +113,9 @@ const Home = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center"
-        }}>
+        }} 
+            key={"5"}
+        >
             
             <Button color="info">
                 <Link to={"/subscribe"} style={{textDecoration: "inherit", color: "inherit"}}>

@@ -1,4 +1,11 @@
-import { Box, Card, CardContent, Stack, Typography, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";

@@ -70,4 +70,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             sudo fuser -k 80/tcp
+            sudo systemctl restart redis-server
             sudo /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar > log.txt 2>&1 &

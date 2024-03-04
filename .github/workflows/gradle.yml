@@ -8,9 +8,6 @@
 name: Main Server CI/CD
 
 on:
-  push:
-    branches: 
-      - "server-main"
   pull_request:
     branches:
       - "server-main"

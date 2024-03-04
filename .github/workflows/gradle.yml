@@ -30,6 +30,14 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
+        
+    - uses: actions/checkout@v3
+    - run: touch ./src/main/resources/application-dev.properties
+    - run: echo "${{ secrets.APP_PROPERTIES }}" > ./src/main/resources/application-dev.properties
+    - run: cat ./src/main/resources/application-dev.properties
+    
+    - name: Run chmod to make gradlew executable
+      run: chmod +x gradlew
     - name: Build with Gradle
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       with:
@@ -49,12 +57,18 @@ jobs:
         with:
           name: cicd
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v8.5.4
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: SCP transfer
-        run: scp *.jar ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}:~/cicd
-      - name: Execute remote commands
-        run: |
-          ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo fuser -k 8080/tcp"
-          ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo nohup java -jar ~/cicd/*.jar &"
+        run: scp -o StrictHostKeyChecking=no *.jar ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}:~/cicd
+      - name: Execute built .jar file
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_DOMAIN_NAME }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo fuser -k 80/tcp
+            sudo systemctl restart redis-server
+            sudo /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar > log.txt 2>&1 &

@@ -28,10 +28,16 @@
 - 따라서 AWS Step Functions를 도입하였다.
 
 ## 구독 홈페이지 및 API 서버 아키텍처
+![Kau-notifier-server-architecture drawio (1)](https://github.com/highlaw00/KauNotifier/assets/65754646/036d0152-ef26-48ff-ad39-b73c41aa6b68)
 
 
+### 구독 홈페이지 세부설명
+1. Route53/CloudFront를 통해 (https://kau-notifier.site) 에 접속하였을 때 AWS S3에 배포된 HTML 파일(React.js)이 반환 됨.
+2. API 서버(Spring boot) 또한, Route53/CloudFront를 통해 접근할 수 있음. (HTTPS 통신을 위해 CloudFront 배포 설정)
+3. API 서버는 외부 데이터베이스 (https://planetscale.com) 에 연결하여 데이터를 주고 받으며 구독 정보를 생성, 갱신, 삭제함.
 
-## Components
+
+# Components
 
 ### 서버
 

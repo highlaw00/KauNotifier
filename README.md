@@ -5,6 +5,14 @@
 하루에도 많은 수(0~20)의 교내 공지사항이 업로드 되지만, 푸시 알람이 존재하지 않아 유용하거나 중요한 공지사항을 놓치는 학우가 많습니다.
 그런 학우들의 니즈를 반영해 **한국항공대학교 공지사항 알리미**를 만들고자 합니다.
 
+# 사용 방법(Use case)
+
+![001](https://github.com/highlaw00/KauNotifier/assets/65754646/3a8bfaf0-670e-4184-a8cf-56d22fdbf822)
+![002](https://github.com/highlaw00/KauNotifier/assets/65754646/9529af9a-df93-4c31-b916-69073d21a0cd)
+![003](https://github.com/highlaw00/KauNotifier/assets/65754646/4416b7a1-bf7c-4722-8304-e343f4885a36)
+![004](https://github.com/highlaw00/KauNotifier/assets/65754646/076a3b13-d17a-46df-a725-82b3cd077920)
+
+
 # Service Architecture
 ## 이메일 발송 서비스 아키텍처
 ![Kau-notifier-email-architecture drawio](https://github.com/highlaw00/KauNotifier/assets/65754646/e55ca9d5-1f4a-4be3-be31-126600edcf21)
@@ -36,19 +44,3 @@
 2. API 서버(Spring boot) 또한, Route53/CloudFront를 통해 접근할 수 있음. (HTTPS 통신을 위해 CloudFront 배포 설정)
 3. API 서버는 외부 데이터베이스 (https://planetscale.com) 에 연결하여 데이터를 주고 받으며 구독 정보를 생성, 갱신, 삭제함.
 
-
-# Components
-ERD 다이어그램, 클래스 다이어그램 등은 추후 보완 후 업로드 예정
-
-### 서버
-
-- 사용 프레임워크
-- 사용 Database
-
-- ERD 다이어그램
-![image](https://github.com/highlaw00/KauNotifier/assets/65754646/6874bb62-7caf-4f09-bd0e-fd653dbeeca1)
-
-- 클래스 다이어그램
-![image](https://github.com/highlaw00/KauNotifier/assets/65754646/db9b43c2-d79f-4722-9980-66796cbe65d5)
-
-### 웹 스크래퍼

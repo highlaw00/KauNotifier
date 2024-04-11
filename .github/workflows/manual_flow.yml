@@ -45,14 +45,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: cicd
-      - name: ssh check
-        run: ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: SCP transfer
-        run: scp *.jar ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}:~/cicd
+        run: scp -o StrictHostKeyChecking=no *.jar ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }}:~/cicd
       - name: Execute remote commands
         run: |
           ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_DOMAIN_NAME }} "sudo fuser -k 8080/tcp"

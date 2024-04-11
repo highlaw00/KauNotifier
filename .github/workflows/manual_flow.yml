@@ -66,4 +66,4 @@ jobs:
           script: |
             sudo fuser -k 80/tcp
             sudo systemctl restart redis-server
-            sudo /usr/local/jdk-21/bin/java -jar ~/cicd/*-SNAPSHOT.jar > log.txt 2>&1 &
+            sudo /usr/local/jdk-21/bin/java -jar -Dspring.profiles.active=prod ~/cicd/*-SNAPSHOT.jar > log.txt 2>&1 &

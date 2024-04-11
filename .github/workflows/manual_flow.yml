@@ -45,6 +45,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: cicd
+      - name: ssh Reset
+        uses: ssh-keygen -R ${{ secrets.SERVER_DOMAIN_NAME }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
